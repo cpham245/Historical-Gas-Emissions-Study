@@ -1,0 +1,1022 @@
+---
+title: "Historical Gas Emissions & Economic Growth Study"
+author: "Christina Pham and Sohana Ahsan"
+format: 
+  pdf:
+     toc: true
+     theme: united
+execute:
+  echo: true  
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+# Background: Historical Gas Emissions & Economic Growth
+
+One of the most urgent issues facing the world today is climate change,
+with greenhouse gas emissions playing a critical role in driving global
+warming. Rising global temperatures, extreme weather events, and
+changing climate patterns are the results of the buildup of greenhouse
+gases in the atmosphere, which is mostly caused by human activities such
+the burning of fossil fuels, deforestation, and industrial operations.
+
+Historically, economic growth has been **positively correlated with
+emissions**, with if GDP increases, so does energy consumption and
+emissions. However, recent trends suggest that some **high-income
+nations** have successfully **reduced emissions while maintaining
+economic growth**, suggesting a possible **decoupling** between GDP and
+emissions.
+
+This report analyzes **historical GHG emissions data from Climate
+Watch**, covering the period from **1990 to 2019** for **195** countries
+and regions. The dataset provides insights into emissions trends across
+various geographical areas and economic circumstances, allowing for a
+more in-depth knowledge of how emissions have changed over time. The
+goal of this report is to explore these trends, compare emissions across
+areas, and evaluate countries' progress toward lowering their carbon
+footprint. This data will be studied alongside **GDP per capita data**
+and **Population data** from **the World Bank**, providing a
+comprehensive view of **economic factors influencing emissions trends**.
+This analysis intends to add to the ongoing discussion about climate
+policy and mitigation measures by analyzing emission trends along with
+GDP and key drivers.
+
+## The Challenge: Balancing Emissions Reduction with Economic Growth
+
+Achieving worldwide climate goals, such as those established by the
+Paris Agreement, which seeks to keep the increase in global temperature
+to well below 2°C over pre-industrial levels, depends on addressing
+these emissions. However, this effort must balance economic development,
+as countries at different income levels face unique challenges in
+reducing their carbon footprint.
+
+Countries at different income levels face **unique challenges** in
+lowering their carbon footprint while sustaining economic growth.
+
+-   **Developed nations** may have the financial and technological
+    capacity to **invest in clean energy** and transition toward
+    low-carbon economies.
+
+-   **Developing nations**, however, may rely on fossil fuels for
+    **economic expansion**, leading to increased emissions.
+
+In order to make informed decisions on sustainability initiatives,
+governments, researchers, and the general public must have a thorough
+understanding of emissions statistics. The success of climate policy,
+inequalities in accountability and impact, and the basis for future
+climate action can all be uncovered by a thorough examination of past
+emissions trends.
+
+![](data/GettyImages-631092060-e1712314851653.jpg)
+
+## Gas Emissions Data
+
+The data consist of greenhouse gas (GHG) emissions measured for
+different countries and regions worldwide, spanning the years 1990 to
+2019. GHG emissions contribute to climate change, and analyzing
+long-term trends helps assess mitigation efforts and policy
+effectiveness. The dataset records emissions values in million metric
+tons of $CO_2$ equivalent($MtCO_2e$) and categorizes emissions across
+different sectors.
+
+-   **Observational units**: Annual GHG emissions ($MtCO_2e$) per
+    country or region.
+
+-   **Variables**: Year, Country, Data Source, Sector, Gas, and Unit
+
+-   **Time coverage**: 1990-2019 (30 years).
+
+-   **Geographic coverage**: 195 countries and global totals.
+
+The table below provides variable descriptions and units for each column
+in our dataframe.
+
+| Variable | Description | Units |
+|------------------------|------------------------|------------------------|
+| Year | Year of recorded emissions | Numeric; Years |
+| Country | Country where emissions were recorded | Categorical; Country Name |
+| Data Source | Source of the emissions data | Categorical; Source Name |
+| Sector | Sector classification of emission (LUCF = Land Use Change and Forestry) | Categorical; Sector Name |
+| Gas | Type of greenhouse gas measured (GHG = Greenhouse Gas) | Categorical; Gas Type |
+| Unit | Measurement unit for emissions values | Numeric; Million metric tons of $CO_2$ equivalent ($MtCO_2e$) |
+
+: Data Description Table
+
+## GDP Per Capita Data (inc. Population)
+
+To assess the impact of **economic growth on emissions**, we incorporate
+**GDP per capita** data from the **World Bank**. This dataset provides
+annual **GDP per capita values** for **195 countries and regions**,
+expressed in **current US dollars**.
+
+-   **Observational Unit:** Countries
+
+-   **Time Coverage:** 1961-2019
+
+-   **Geographic Coverage:** 264 countries and global totals
+
+-   **Measurement Unit:** US dollars (current prices)
+
+-   **Relevance to Emissions:** Higher GDP per capita often correlates
+    with **higher energy consumption**, but may also indicate
+    investments in **clean energy and sustainability measures**.
+
+| Variable | Description | Units |
+|------------------------|------------------------|------------------------|
+| Year | Year in which GDP per capita was recorded | Numeric; Years |
+| Country | Name of the country where GDP was recorded | Categorical; Country Name |
+| GDP per capita | Gross Domestic Product per capita in current US Dollars | Numeric; USD |
+| Country Code | Standardized three-letter ISO 3166-1 alpha-3 code representing each country | Categorical; ISO Alpha-3 Code |
+| Population | The total population per year per capita | Numeric; Population Count |
+
+## The Question of Interest
+
+The key research question that guides this analysis is: ***How have
+global and country-specific GHG emissions changed over time, and what
+variables may have influenced these trends?***
+
+This question is motivated by the increasing urgency of addressing
+climate change and the necessity for a data-driven strategy to assessing
+emissions reduction initiatives. By analyzing emissions data over a
+30-year period, this study aims to identify:
+
+-   Overall trends in global GHG emissions.
+
+-   Regional variations and differences between developed and developing
+    nations.
+
+-   The role of economic growth, policy changes, and energy transitions
+    in shaping emissions trends.
+
+Finding important trends and plausible causes for the observed emissions
+trends would be necessary to provide a satisfying response to this
+topic. This includes evaluating whether certain policies have been
+effective in curbing emissions, determining which countries or regions
+have made significant progress, and understanding the ways in which
+industrial and economic factors affect GHG emissions. Additionally, the
+findings will help inform discussions on future mitigation strategies
+and areas where further research or policy intervention may be needed.
+
+# Data Cleaning
+
+Before conducting our analysis, we need to **clean and restructure the
+dataset**. Our data is **not in a tidy format**, as years are stored as
+**column headers** instead of a **single variable**. The cell below
+imports our Historical Emissions data.
+
+To ensure proper analysis, we **tidy the dataset** by:
+
+1.  **Reshaping it into long format** (moving years from columns to
+    rows).
+
+2.  **Ensuring Year is stored as a numeric variable**.
+
+3.  **Handling missing values** appropriately.
+
+    -   Our GDP dataset contains a significant number of missing values
+        in the GDP per capita.To preserve data integrity and avoid
+        unnecessary loss of information, we will apply mean imputation,
+        replacing missing values with the mean GDP per capita for each
+        country. In regards to our Population and Emissions dataset, we
+        will be dropping missing NA's for simplicity.
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(patchwork)
+library(ggplot2)
+library(RColorBrewer)
+library(gt)
+library(knitr)
+
+emissions <- read_csv("~/PSTAT 100/historical_emissions/data/historical_emissions.csv")
+gdp_per_capita <- read_csv("~/PSTAT 100/historical_emissions/data/gdp-per-capita.csv") 
+population <- read_csv("~/PSTAT 100/historical_emissions/data/population.csv",locale = locale(encoding = 'latin1'))
+```
+
+### First Looks at our Datasets (Emissions, Gdp, and Population)
+
+#### Emissions Data Sneak Peek
+
+```{r, echo = FALSE}
+#Look at the raw datasets
+emissions %>% 
+  select(1:5) %>%
+  head(3) %>% 
+  kable()
+```
+
+#### GDP Per Capita Data Sneak Peek
+
+```{r, echo = FALSE}
+gdp_per_capita %>%
+  select(1:3) %>%
+  head(5) %>%
+  kable()
+```
+
+#### Population Data Sneak Peek
+
+```{r, echo = FALSE}
+population %>%
+  select(1:5) %>%
+  head(3) %>%
+  kable()
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+# Convert the '1990' column to numeric to match other years
+emissions <- emissions %>%
+  mutate(`1990` = as.numeric(`1990`))  # Ensure 1990 is a numeric column
+
+# Reshape dataset: Convert wide format (years as columns) to long format
+emissions_long <- emissions %>% 
+  pivot_longer(
+    cols = starts_with("20")| starts_with ("19"), # Select year columns dynamically
+    names_to = "Year",  # Create a new column for years
+    values_to = "Emissions") %>%   # Store values in this column
+   mutate(Year = as.numeric(Year))
+
+# View transformed dataset
+# head(emissions_long)
+```
+
+```{r, echo = FALSE}
+#Check which column this NA is present
+#colSums(is.na(emissions_long))
+
+#Drop NA, NA present in 1990 for Namibia.
+emissions_long <- emissions_long %>%
+  drop_na()
+
+#Check
+# sum(is.na(emissions_long))
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+#Cleaning Population
+population <- population %>% 
+  pivot_longer(cols = -c('Country Name', 'Country Code'),
+  names_to = 'Year',
+  values_to = 'Population') %>%
+  mutate(Year = as.integer(Year)) %>%
+  select(-c('Country Name'))
+
+#Take look at first few obs
+# gdp_per_capita %>% 
+#   head()
+
+#Reshape wide to long format
+gdp <-  gdp_per_capita %>% 
+  select(-'Indicator Name', -'Indicator Code') %>%
+  pivot_longer(cols = -c('Country Name', 'Country Code'), 
+               names_to = "Year", 
+               values_to = "gdp") %>% 
+  mutate(Year = as.integer(Year)) %>% 
+  rename(Country = `Country Name`)
+
+#Check our format
+# head(gdp)
+
+```
+
+```{r, echo = FALSE}
+#Check % of missing NA
+#sum(is.na(gdp$GDP_per_capita)) / nrow(gdp) * 100 
+
+geom_mean <- \(x) prod(x, na.rm = TRUE) & (1/sum(is.na(x)))
+
+gdp_clean <- gdp %>% 
+  group_by(Country) %>% 
+  mutate(gdp = 1 + gdp/100) %>% 
+  mutate(gdp = replace_na(gdp, replace = geom_mean(gdp)))
+
+#Check first few obs & if there is any missing NA
+# sum(is.na(gdp_clean))
+# head(gdp_clean)
+```
+
+```{r, echo = FALSE}
+# Missing NA for Population
+population_clean <- population %>% 
+  drop_na() 
+
+# head(population_clean)
+# sum(is.na(population_clean))
+
+```
+
+### Final Merge (All Datasets)
+
+```{r, echo = FALSE}
+#Merge dataset with population
+socio_factors <- left_join(gdp_clean, population_clean, by = c('Country Code', 'Year'))
+#Check new format
+# head(socio_factors)
+cleaned_data <- emissions_long %>%
+  inner_join(socio_factors, by = c("Country", "Year")) %>% 
+  drop_na() #Drop any remaining NA's
+#look first few obs
+cleaned_data %>% 
+  select(Country, `Country Code`, Year, Emissions, gdp, Population) %>% 
+  head(5) %>% 
+  kable()
+```
+
+Our dataset has been tidied, and no longer contains any missing NA's. We
+can now move onto our **EDA** (Exploratory Data Analysis) section.
+
+# Exploratory Data Analysis
+
+## Global Emissions & GDP Overtime
+
+To understand long-term trends in greenhouse gas output, we first
+examine global emissions from 1990 to 2019. The dataset includes a
+special "World" entry, which aggregates emissions across all reporting
+countries and sectors. This allows us to visualize the overall trend of
+human impact on the atmosphere over the past three decades. Also, by
+integrating global GDP data and scaling both metrics by total
+population, we reveal how demographic expansion and economic growth have
+jointly shaped the trajectory of greenhouse gas emissions over time.
+
+```{r, echo = FALSE, warning = FALSE}
+#Global Emissions Trend Over Time (World)
+# Summarize global data
+global_emissions_summary <- cleaned_data %>%
+  filter(Country == "World") %>%
+  group_by(Year) %>%
+  summarise(
+    Emissions = sum(Emissions, na.rm = TRUE),
+    Population = sum(Population, na.rm = TRUE),
+    .groups = "drop") %>%
+  mutate(Pop_Billions = Population / 1e9)
+
+# Plot: Emissions over time, point size = population
+global_emissions_chart <- ggplot(global_emissions_summary, aes(x = Year, y = Emissions)) +
+  geom_line(color = "darkgreen", size = 1.2) +
+  geom_point(aes(size = Pop_Billions), color = "darkgreen", alpha = 0.6) +
+  scale_size_continuous(name = "Population (Billions)", range = c(1.5, 6)) +
+  labs(
+    title = "Global Greenhouse Gas Emissions (1990–2019)",
+    x = "Year",
+    y = "Emissions (MtCO2e)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.3, face = "bold"),
+    # legend.position = "right"
+  )
+
+#Global GDP
+global_gdp_summary <- cleaned_data %>%
+  filter(Country == "World") %>%
+  group_by(Year) %>%
+  summarise(
+    GDP = sum(gdp, na.rm = TRUE),
+    Population = sum(Population, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Pop_Billions = Population / 1e9)
+
+# Plot: GDP over time, point size = population
+global_gdp_chart <- ggplot(global_gdp_summary, aes(x = Year, y = GDP)) +
+  geom_line(color = "firebrick", size = 1.2) +
+  geom_point(aes(size = Pop_Billions), color = "firebrick", alpha = 0.6) +
+  scale_size_continuous(name = "Population (Billions)", range = c(1.5, 6)) +
+  labs(
+    title = "Global GDP Over Time (1990–2019)",
+    x = "Year",
+    y = "Total GDP (USD)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    # legend.position = "right"
+  )
+```
+
+```{r, fig.width = 10, fig.height = 5, echo = FALSE}
+global_emissions_chart + global_gdp_chart
+```
+
+Global greenhouse gas emissions and GDP have both shown a steady and
+significant increase from 1990 to 2019. Emissions rose gradually in the
+early 1990s, followed by a sharp acceleration after 2000, closely
+reflecting patterns of economic growth during the same period. This rise
+was largely driven by the rapid industrial expansion of countries such
+as China and India which experienced significant industrial growth,
+leading to a surge in energy consumption, much of it powered by fossil
+fuels. While some fluctuations in emissions growth can be observed, such
+as temporary slowdowns during economic recessions or during brief
+periods of policy intervention, the overall pattern remains one of
+continued growth.
+
+A slowdown in the rate of emissions growth appears in the most recent
+years, possibly reflecting the increasing adoption of renewable energy
+sources, improvements in energy efficiency, and stricter environmental
+policies in some parts of the world. However, emissions remain
+significantly higher than they were in previous decades, underscoring
+the fact that global efforts to curb emissions have not yet resulted in
+a meaningful reduction in overall greenhouse gas output.
+
+The key takeaway from this trend is that economic and industrial growth
+remain primary drivers of emissions, and while policies and cleaner
+technologies may help slow the rate of increase, they have not yet led
+to a global-scale reduction. Future emissions reductions will likely
+depend on the successful implementation of more ambitious climate
+policies, accelerated investments in renewable energy, and international
+cooperation to enforce emissions limits more effectively.
+
+### Top 5 Contributors to Overall Global Emissions since 1990
+
+Rather than focusing on a single year, we examined which countries
+repeatedly ranked among the top 5 greenhouse gas emitters from 1990 to
+2019. This long-term view reveals which nations have played the most
+significant roles in driving emissions over the past three decades.
+China and the United States appear most frequently, with India, Russia,
+and the European Union also showing up regularly.
+
+```{r, echo = FALSE, warning = FALSE, fig.width = 8, fig.height= 5}
+#Filter out top 5 overall emitters
+top5_counts <- cleaned_data %>%
+  filter(Year >= 1990, Year <= 2019, Country != "World") %>%
+  group_by(Year) %>%
+  slice_max(order_by = Emissions, n = 5, with_ties = FALSE) %>%
+  ungroup() %>%
+  count(Country, name = "Top5_Appearances") %>%
+  arrange(desc(Top5_Appearances))
+
+country_order <- top5_counts %>%
+  # arrange(desc(Top5_Appearances)) %>%
+  pull(Country)
+
+# Apply this order to both plots
+top5_counts <- top5_counts %>%
+  mutate(Country = factor(Country, levels = country_order))
+
+emissions_top5 <- cleaned_data %>%
+  filter(Country %in% country_order) %>%
+  mutate(Country = factor(Country, levels = country_order))
+
+# Line chart
+top5_chart <- emissions_top5 %>%
+  ggplot(aes(x = Year, y = Emissions, color = Country)) + 
+  geom_line(size = 1) + 
+  labs(title = "GHG Trends: Top 5 Overall Emitters (1990–2019)", 
+       x = "Year", y = "Emissions (MtCO2e)") +
+  theme_minimal() 
+# Bar chart
+count_chart <- top5_counts %>%
+  ggplot(aes(x = Country, y = Top5_Appearances, fill = Country)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "Top 5 Emissions Ranking (1990–2019)",
+       x = "Country", y = "Number of Appearances in Top 5") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Combine with patchwork
+count_chart/ top5_chart
+
+```
+
+From 1990 to 2019, the United States, China, and Brazil have been the
+most consistent contributors to global greenhouse gas emissions, each
+appearing in the top 5 every single year. Meanwhile, India and Indonesia
+have steadily risen in the rankings, with frequent appearances in the
+top 5.
+
+China’s emissions rose sharply after 2000, making it the dominant global
+emitter. The U.S. remained relatively stable, whereas Indonesia balanced
+between increasing and decreasing. India’s emissions steadily increased,
+reflecting economic growth, while Brazil saw a modest rise with a
+notable drop around 2010.
+
+### Developed Countries vs. Developing Countries
+
+To explore differences in emissions behavior, we compare greenhouse gas
+emissions between a subset of developed (e.g., U.S., EU, Japan) and
+developing countries (e.g., India, Indonesia, Brazil). While our full
+dataset contains 168 countries, we focus on a selected group of
+representative nations to illustrate broader trends. Developed countries
+have historically emitted more due to early industrialization, while
+emissions in developing countries are rising alongside economic growth.
+This comparison helps us assess whether developed nations are
+successfully reducing emissions and how developing economies are
+contributing to current global trends.
+
+```{r, echo = FALSE}
+# Count Number of unique countries
+# unique(cleaned_data$Country)
+# Define country groups
+developed <- c("United States", "European Union (27)", "Japan", "Canada", "Australia", "Germany", "United Kingdom", "France")
+developing <- c("India", "Indonesia", "Brazil", "South Africa", "Nigeria", "Iran", "Vietnam", "China")
+
+# Assign development status
+emissions_grouped <- cleaned_data %>%
+  filter(Country %in% c(developed, developing)) %>%
+  mutate(Development = case_when(
+    Country %in% developed ~ "Developed",
+    Country %in% developing ~ "Developing"
+  ))
+
+#Aggregate emissions by year and group
+emissions_by_dev <- emissions_grouped %>% 
+  group_by(Year, Development) %>% 
+  summarise(Total_Emissions = sum(Emissions), .groups = "drop")
+
+# Plot emissions trends by group
+ggplot(emissions_by_dev, aes(x = Year, y = Total_Emissions, color = Development)) +
+  geom_line(size = 1.2) +
+  labs(title = "GHG Emissions: Developed vs. Developing Countries(1990–2019)",
+       x = "Year", 
+       y = "Total Emissions (MtCO2e)", 
+       color = "Development Criteria") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.2))
+```
+
+This plot shows the aggregated annual greenhouse gas emissions from
+selected developed and developing countries between 1990 and 2019.
+Emissions from developing countries increased dramatically over this
+period, surpassing those of developed countries around 2007. While the
+group includes multiple nations, the sharp rise is primarily driven by
+China and India, whose rapid industrialization and economic growth
+contributed significantly to the upward trend.
+
+In contrast, emissions from developed countries remained relatively
+stable or declined slightly, reflecting policy efforts, cleaner
+technologies, and shifts away from carbon-intensive industries. This
+divergence highlights how emerging economies are becoming key drivers in
+global climate dynamics as contributors to emissions.
+
+## Country Level Analysis
+
+### GHG Emissions Trends: US vs. EU (1990–2019)
+
+Over the past three decades, the United States and the European Union
+have taken different paths in addressing GHG emissions. While both have
+historically contributed significantly to global emissions, the EU has
+demonstrated a more consistent downward trend, whereas the US has
+experienced fluctuations.
+
+```{r, echo = FALSE}
+# Define European Union countries
+EU_countries <- c("Albania", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina", 
+                  "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", 
+                  "Finland", "France", "Germany", "Greece", "Hungary", "Ireland", "Italy", 
+                  "Latvia", "Lithuania", "Luxembourg", "Malta", "Moldova", "Netherlands", 
+                  "Norway", "Poland", "Portugal", "Romania", "Serbia", "Slovenia", "Spain", 
+                  "Sweden", "Switzerland", "United Kingdom")
+
+# Aggregate emissions for EU
+EU_emissions <- cleaned_data %>%
+  filter(Country %in% EU_countries) %>%
+  group_by(Year) %>%
+  summarise(Emissions = sum(Emissions), .groups = "drop") %>%
+  mutate(Country = "European Union")
+
+# Extract US emissions
+US_emissions <- cleaned_data %>%
+  filter(Country == "United States")
+
+# Combine US and EU data for comparison
+us_eu_comparison <- bind_rows(US_emissions, EU_emissions)
+
+# Plot emissions trends for US & EU
+us_eu_trends <- us_eu_comparison %>%
+  ggplot(aes(x = Year, y = Emissions, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "GHG Emissions Trends: US vs EU (1990–2019)",
+       x = "Year", y = "Emissions (MtCO2e)") +
+  theme_minimal()
+print(us_eu_trends)
+```
+
+The European Union has steadily reduced emissions since the 1990s,
+largely due to strict climate policies, the transition to renewable
+energy sources, and the implementation of carbon pricing mechanisms. The
+United States, in contrast, saw emissions rise in the 1990s and early
+2000s, followed by a decline after 2008. The US reduction in emissions
+can be attributed to a shift from coal to natural gas, improvements in
+energy efficiency, and the expansion of renewable energy. However,
+periodic increases indicate that the country still faces challenges in
+fully transitioning to a low-carbon economy.
+
+The key takeaway from this analysis is that the EU has been more
+successful in decoupling economic growth from emissions, whereas the US,
+despite progress, continues to show variability in its emissions trends.
+This suggests that long-term policy stability and regulatory frameworks
+play a crucial role in emissions reduction efforts.
+
+### GHG Emissions Trends: China & India
+
+China and India, as two of the fastest-growing economies, have shown
+significant increases in emissions over the years. However, the
+magnitude and pace of their emissions growth differ due to varying
+levels of industrialization and energy dependency.
+
+Emissions per unit of GDP serve as an indicator of how efficiently a
+country produces economic output while managing carbon emissions. In
+both China and India, emissions per GDP have shown a downward trend over
+the past three decades, indicating improvements in energy efficiency and
+industrial modernization.
+
+```{r, fig.width = 10, fig.height = 5, echo = FALSE}
+# Plot emissions trends for China & India (Industrial Expansion)
+china_india <- c("China", "India")
+china_india_trends <- cleaned_data %>%
+  filter(Country %in% china_india) %>%
+  ggplot(aes(x = Year, y = Emissions, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "GHG Emissions Trends: China & India (1990–2019)",
+       x = "Year", y = "Emissions (MtCO2e)") +
+  theme_minimal()
+
+# Emissions per GDP for China & India
+china_india_gdp <- cleaned_data %>%
+  filter(Country %in% china_india) %>%
+  mutate(Emissions_per_GDP = Emissions / gdp) %>%
+  ggplot(aes(x = Year, y = Emissions_per_GDP, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "Emissions per GDP: China vs India (1990–2019)",
+       x = "Year", y = "Emissions per Unit GDP") +
+  theme_minimal()
+
+china_india_trends + china_india_gdp
+```
+
+China’s emissions have surged dramatically since 2000, reflecting its
+rapid industrialization, urban expansion, and reliance on coal as the
+primary energy source. The country's economic boom, driven by
+manufacturing and large-scale infrastructure projects, has made it the
+world’s largest emitter of GHGs. India, while also experiencing economic
+growth, has shown a more gradual increase in emissions. Unlike China,
+India has relied more on hydro and renewable energy sources,
+contributing to a slower emissions growth rate.
+
+The primary driver of China’s emissions increase is its high reliance on
+coal-powered electricity and export-driven industrial production. In
+contrast, India’s emissions trajectory suggests a more diversified
+energy mix and a growing emphasis on renewable energy expansion. The key
+takeaway here is that while both nations are on a high-emission
+trajectory, India is progressing at a slower rate, potentially offering
+a greater opportunity for early climate mitigation interventions.
+
+China, despite having the highest total emissions, has made significant
+progress in reducing its emissions intensity. This trend is largely
+driven by technological advancements, shifts towards cleaner energy, and
+government-led emissions reduction initiatives. India has also reduced
+emissions per unit of GDP, but at a more gradual pace, reflecting its
+ongoing industrial expansion and evolving energy policies.
+
+The declining emissions intensity in both countries suggests that
+economic growth does not necessarily have to be tied to increased
+emissions. While China’s rapid decline indicates a more aggressive
+transition towards efficiency, India’s slower yet consistent
+improvements highlight the growing role of renewables and
+energy-efficient technologies in shaping the future of emissions
+management.
+
+## The Impact of Climate Policies
+
+Given the strong connection between economic growth and emissions,
+international climate agreements have sought to mitigate emissions by
+setting reduction targets and encouraging greener energy transitions.
+Two of the most significant agreements in recent decades are the Kyoto
+Protocol (1997) and the Paris Agreement (2015). The effectiveness of
+these agreements can be evaluated by comparing emissions levels before
+and after their implementation.
+
+```{r, echo = FALSE, warning = FALSE}
+library(countrycode)
+gdp <- read.csv("~/PSTAT 100/historical_emissions/data/gdp-per-capita.csv", stringsAsFactors = FALSE)
+emissions <- read.csv("~/PSTAT 100/historical_emissions/data/historical_emissions.csv", stringsAsFactors = FALSE)
+population <- read.csv("~/PSTAT 100/historical_emissions/data/population.csv", stringsAsFactors = FALSE)
+
+# Reshape GDP and Population data
+colnames(gdp)[5:ncol(gdp)] <- as.character(1960:(1959 + ncol(gdp) - 4))
+colnames(population)[3:ncol(population)] <- as.character(1960:(1959 + ncol(population) - 2))
+
+gdp_long <- gdp %>% pivot_longer(cols = starts_with("19") | starts_with("20"),
+                                  names_to = "Year", values_to = "GDP_per_capita")
+population_long <- population %>% pivot_longer(cols = starts_with("19") | starts_with("20"),
+                                                names_to = "Year", values_to = "Population")
+
+# Convert Year to numeric
+gdp_long$Year <- as.numeric(gdp_long$Year)
+population_long$Year <- as.numeric(population_long$Year)
+emissions_long$Year <- as.numeric(emissions_long$Year)
+
+# Merge datasets
+merged_data <- gdp_long %>%
+  inner_join(emissions_long, by = c("Country.Name" = "Country", "Year" = "Year")) %>%
+  inner_join(population_long, by = c("Country.Name", "Year")) %>%
+  select("Country.Name", "Year", "GDP_per_capita", "Emissions", "Population") %>%
+  filter(!(Country.Name == "World"))
+
+# Add Continent information
+merged_data$Continent <- countrycode(merged_data$`Country.Name`, origin = "country.name", destination = "continent")
+```
+
+```{r, echo = FALSE}
+# Analyze impact of climate policies
+policy_years <- c("Kyoto Protocol" = 1997, "Paris Agreement" = 2015)
+policy_analysis <- data.frame()
+for (policy in names(policy_years)) {
+  year <- policy_years[policy]
+  before <- merged_data %>% filter(Year < year) %>% summarise(Mean_Emissions = mean(Emissions, na.rm = TRUE))
+  after <- merged_data %>% filter(Year >= year) %>% summarise(Mean_Emissions = mean(Emissions, na.rm = TRUE))
+  policy_analysis <- rbind(policy_analysis, data.frame(Policy = policy, Before = before$Mean_Emissions, After = after$Mean_Emissions))
+}
+policy_analysis %>% 
+  kable()
+
+```
+
+The data reveals that neither agreement has resulted in an absolute
+reduction in global emissions. Following the Kyoto Protocol, average
+emissions increased from 163.96 $MtCO_2e$ before 1997 to 215.48
+$MtCO_2e$ afterward, suggesting that the agreement did not lead to
+meaningful reductions. This could be attributed to the lack of
+participation from major emitters such as the United States, as well as
+the fact that some countries were not required to meet binding emissions
+targets.
+
+Similarly, after the Paris Agreement in 2015, emissions continued to
+rise, increasing from an average of 194.97 $MtCO_2e$ before the
+agreement to 245.90 $MtCO_2e$ afterward. While the Paris Agreement set
+ambitious targets, it relies on voluntary national commitments rather
+than legally binding enforcement, making it difficult to ensure
+compliance.
+
+Overall, climate agreements have raised awareness and encouraged
+emission reduction efforts, but their effectiveness has been limited by
+enforcement challenges, economic constraints, and the continued
+dominance of fossil fuels. Stronger policies, economic incentives, and
+technological advancements will be necessary to achieve significant
+reductions in global emissions. Without binding international
+commitments and greater accountability, emissions are likely to continue
+rising despite policy efforts.
+
+# Summary and Discussion
+
+### Summary Analysis
+
+This project examined global greenhouse gas emissions from 1990 to 2019,
+with a particular focus on the relationship between emissions, economic
+development, and population growth. By integrating emissions data with
+GDP and population statistics, we revealed how industrial expansion and
+demographic trends have influenced the trajectory of global
+emissions.Between 1990 and 2019, total global GHG emissions increased
+from approximately 33,000 $MtCO_2e$ to about 50,000 $MtCO_2e$, showing a
+sharp and consistent upward trend. This rise was especially steep after
+the year 2000, a period that aligned with China's industrial expansion
+and integration into the global economy. In 2000, China emitted just
+over 4,000 $MtCO_2e$, but by 2019, this number had surpassed 12,000
+$MtCO_2e$, tripling in less than two decades. India also saw emissions
+grow steadily, from under 1,000 $MtCO_2e$ in 1990 to about 3,000
+$MtCO_2e$ by 2019. On the economic front, global GDP also experienced
+significant growth. Total world GDP increased from about \$44 trillion
+in 1990 to over \$124 trillion by 2019 (in current US dollars). Much of
+this growth was driven by developing economies.
+
+Despite leading the world in total emissions, China made substantial
+progress in reducing emissions intensity. In 1990, China emitted around
+700 $MtCO_2e$ per unit of GDP, but by 2019, this number had dropped to
+under 150 $MtCO_2e$ per unit GDP, a decline of nearly 80%. India showed
+similar but slower progress, reducing emissions intensity from about 240
+to 180 $MtCO_2e$ per unit GDP over the same period. These changes
+suggest that both countries became significantly more efficient in how
+they generate economic output relative to emissions.
+
+Our comparison of developed and developing nations revealed stark
+contrasts. Developed countries such as the United States and European
+Union members have maintained or reduced their emissions. For example,
+the United States’ emissions remained relatively flat from the
+mid-2000s, hovering around 6,000 $MtCO_2e$, and showed a slight decline
+after 2008. In contrast, emissions from developing countries have
+increased significantly. This is especially clear in our analysis of
+aggregated emissions, where developing countries surpassed developed
+ones in total GHG emissions around 2007, driven primarily by industrial
+growth in Asia.
+
+Although international agreements like the Kyoto Protocol (1997) and
+Paris Agreement (2015) were implemented during this period, global
+average emissions continued to rise. After the Kyoto Protocol, average
+emissions increased from 163.95 $MtCO_2e$ to over 215.47 $MtCO_2e$, and
+after the Paris Agreement, from 194.97 $MtCO_2e$ to more than 245.90
+$MtCO_2e$. These trends highlight the difficulty of translating
+international commitments into substantial emission reductions,
+especially when agreements lack enforcement or global buy-in.
+
+In essence, while many countries have made progress in emissions
+efficiency, total global emissions have continued to climb.
+High-emitting nations like China and India are becoming more
+carbon-efficient, but their total output continues to rise due to
+economic and population growth. Developed nations have stabilized or
+slightly reduced emissions, but they must continue to lead in innovation
+and support. Equally important is the need for equity: vulnerable
+nations facing climate threats need both financial and technological
+support to adapt.
+
+### Limitations of the Analysis
+
+One of the primary limitations of this study is the absence of post-2019
+emissions data. The dataset, sourced from Climate Watch, only includes
+data up to 2019, which restricts the ability to analyze more recent
+trends in greenhouse gas emissions. Since 2019, several significant
+global events, including the COVID-19 pandemic, have had profound
+effects on industrial activity, transportation, and energy consumption,
+all of which are key drivers of emissions. Without updated data, it is
+difficult to determine whether the pre-2019 trends identified in this
+study have continued, reversed, or changed due to new policies, economic
+disruptions, or technological advancements. This gap in the dataset
+limits the ability to assess the effectiveness of recent climate
+policies and mitigation strategies, making it necessary for future
+research to incorporate post-2019 data for a more comprehensive
+analysis.
+
+Another key limitation is the challenge of distinguishing correlation
+from causation in emissions trends. While the analysis identifies
+statistical relationships between emissions reductions and economic
+indicators such as GDP growth, policy changes, and energy transitions,
+it does not establish direct causal links between specific policies and
+changes in emissions. Many factors influence emissions trends, including
+global economic conditions, advancements in renewable energy
+technologies, and variations in industrial activity. Without more
+detailed policy-level data and controlled study designs, it is difficult
+to determine the precise impact of individual policies on emissions
+reductions. Future research could address this limitation by employing
+more sophisticated econometric models, conducting case studies on
+specific policy interventions, or utilizing natural experiments to
+isolate policy effects.
+
+These limitations highlight the need for continued data collection and
+methodological advancements to improve understanding of emissions trends
+and their underlying causes. Incorporating post-2019 data would provide
+a clearer picture of how emissions have evolved in response to recent
+global developments, while more robust analytical techniques could help
+establish clearer causal relationships between policy measures and
+emissions outcomes. Addressing these gaps would enable more effective
+policymaking and contribute to the broader effort of mitigating climate
+change.
+
+### Future Research Directions
+
+A key priority for future research is extending the analysis to include
+emissions data beyond 2019. The current dataset limits insights into
+recent trends, making it difficult to evaluate the impact of global
+events such as the COVID-19 pandemic, advancements in renewable energy,
+and evolving climate policies. Incorporating post-2019 data would
+provide a more up-to-date understanding of emissions patterns and allow
+researchers to assess whether previously observed trends have continued
+or shifted. This extended analysis could help identify the long-term
+effects of economic disruptions and policy interventions, offering
+valuable insights for future climate action. Additionally, with many
+countries setting net-zero targets for 2050 or earlier, tracking
+emissions trends in the most recent years would provide a clearer
+picture of global progress toward these goals.
+
+Another critical area for future research is examining the interplay
+between emissions, GDP, and human development indices (HDIs). While
+economic growth has historically been linked to rising emissions, the
+relationship is not always straightforward, as factors such as energy
+efficiency improvements, policy measures, and technological advancements
+can decouple growth from emissions. By analyzing the connections between
+emissions, GDP, and HDI, researchers can better understand how economic
+development influences environmental sustainability. This approach could
+also shed light on the trade-offs and synergies between economic growth
+and emissions reduction strategies, particularly in developing nations
+where both economic expansion and sustainability goals must be balanced.
+A deeper investigation into this relationship could inform policies that
+promote sustainable development without compromising economic prosperity
+or human well-being.
+
+Addressing these research directions would significantly enhance our
+understanding of global emissions trends and their socioeconomic
+drivers. Expanding the dataset to include post-2019 emissions and
+integrating economic and human development indicators into the analysis
+would provide a more comprehensive picture of the factors shaping global
+climate change. These efforts would not only contribute to academic
+research but also support policymakers in designing more effective
+climate strategies that align with both environmental and economic
+objectives.
+
+------------------------------------------------------------------------
+
+# Appendix: Extra Graphs
+
+### GDP per Capita vs. Emissions
+
+```{r, echo = FALSE, warning = FALSE}
+# Scatter plot: GDP per capita vs Emissions (Color by Continent)
+ggplot(merged_data, aes(x = GDP_per_capita, y = Emissions, color = Continent)) +
+  geom_point(alpha = 0.7, size = 2) +
+  scale_x_log10() +
+  labs(title = "Economic Growth vs. Emissions",
+       x = "GDP per Capita",
+       y = "Emissions (MtCO2e)") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+### Top 10 GHG Emitters (by Country)
+
+```{r, echo = FALSE}
+cleaned_data %>%
+  filter(Year == 2019, Country != "World") %>%
+  arrange(desc(Emissions)) %>%
+  head(10) %>%
+  ggplot(aes(x = reorder(Country, Emissions), y = Emissions, fill = Emissions)) +
+  geom_col() +
+ scale_fill_gradientn(
+  colours = RColorBrewer::brewer.pal(7, "Greens"),
+  values = scales::rescale(c(1000, 3000, 6000, 12000))  # shifts midpoint
+) +
+  coord_flip() +
+  labs(
+    title = "Top 10 GHG Emitting Countries in 2019",
+    x = "Country", y = "Emissions (MtCO2e)"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Emissions per Capita
+
+```{r, echo = FALSE}
+cleaned_data %>%
+  filter(Year == 2019, Emissions > 0) %>%
+  mutate(Emissions_per_capita = Emissions / Population) %>%
+  slice_max(order_by = Emissions_per_capita, n = 10) %>%
+  ggplot(aes(x = reorder(Country, Emissions_per_capita), y = Emissions_per_capita)) +
+  geom_col(fill = "darkorange") +
+  coord_flip() +
+  labs(title = "Top 10 Countries by Emissions per Capita (2019)",
+       x = "Country", y = "Emissions per Person (MtCO2e)") +
+  theme_minimal()
+
+```
+
+### Emissions per Capita and Total GHG Emissions: Small Island Developing States
+
+```{r, echo = FALSE}
+# Small Island Developing States (SIDS) Vulnerability Analysis
+sids <- c("Maldives", "Tuvalu", "Marshall Islands", "Kiribati", "Fiji")
+sids_data <- cleaned_data %>%
+  filter(Country %in% sids) %>%
+  mutate(Emissions_per_capita = Emissions / Population)
+
+sids_plot <- sids_data %>%
+  ggplot(aes(x = Year, y = Emissions_per_capita, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "GHG Emissions per Capita: SIDS",
+       x = "Year", y = "Emissions per Capita (MtCO2e)") +
+  theme_minimal()
+
+# Total Emissions for Small Island Developing States (SIDS)
+sids_total_plot <- sids_data %>%
+  ggplot(aes(x = Year, y = Emissions, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "Total GHG Emissions for SIDS (1990–2019)",
+       x = "Year", y = "Total Emissions (MtCO2e)") +
+  theme_minimal()
+
+sids_plot / sids_total_plot
+```
+
+### Emissions Reduction (GHG per unit of GDP)
+
+```{r, echo = FALSE}
+#Compute emissions per GDP for 1990 and 2019
+intensity_change <- cleaned_data %>%
+  filter(Year %in% c(1990, 2019), gdp > 0, !Country == "World") %>%
+  mutate(Emissions_per_GDP = Emissions / gdp) %>%
+  select(Country, Year, Emissions_per_GDP) %>%
+  pivot_wider(names_from = Year, values_from = Emissions_per_GDP, names_prefix = "Year_") %>%
+  mutate(Change = Year_2019 - Year_1990) %>%
+  slice_min(order_by = Change, n = 10)  # Countries that reduced emissions intensity the most
+# Extract top 5 countries with greatest reduction
+top5_red <- intensity_change %>%
+  slice_min(order_by = Change, n = 5) %>%
+  pull(Country)
+
+# Filter full dataset and plot trends for each
+cleaned_data %>%
+  filter(Country %in% top5_red, gdp > 0) %>%
+  mutate(Emissions_per_GDP = Emissions / gdp) %>%
+  ggplot(aes(x = Year, y = Emissions_per_GDP)) +
+  geom_line(color = "#238b45", size = 0.4) +
+  facet_wrap(~ Country, scales = "free") +
+  labs(
+    title = "GHG Greatest Reductions: Top 5 Countries (1990–2019)",
+    x = "Year", y = "Emissions per Unit GDP (MtCO2₂e/USD)"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+\`\`\`
